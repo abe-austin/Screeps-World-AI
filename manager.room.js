@@ -14,7 +14,7 @@ var RoomManager =
                 }
             }
         }
-        
+        return owned_rooms;
         //WE MAINTAIN A LIST OF ALL MANAGED ROOMS
         //EACH ROOM DETERMINES A QUOTA OF RESOURCE-MINERS AND DEFENDERS
         //THAT GETS PASSED ON TO THE SPAWNER INSIDE THE ROOM, SO IT CAN DETERMINE WHEN AND WHAT TO GENERATE
@@ -23,17 +23,19 @@ var RoomManager =
     ParseRoom: function(roomName)
     {
         var room = Game.rooms[roomName];
-        var roomStructure = { "name": roomName } ;
-        roomStructure.resources = room.find(this.ParseResource(room, FIND_SOURCES));
-        roomStructure.minerals = room.find(this.ParseResource(room, FIND_MINERALS));
+        var roomStructure = { "name": roomName };
+        roomStructure.resources = this.ParseRoomElements(room, FIND_SOURCES);
+        roomStructure.minerals = this.ParseRoomElements(room, FIND_MINERALS);
+        roomStructure.room_controller = this.ParseRoomElements(room, FIND_CONTROLLER);//check the actual room controller constant name
+        //FUTURE ROOM ELEMENTS TO ADD
         owned_rooms.push(roomStructure);
     },
     
-    ParseResource: function(room, resourceType)
+    ParseRoomElements: function(room, elementType)
     {
         var that = this;
         var resourceList = [];
-        room.find(resourceType)
+        room.find(elementType)
             .forEach(function(source)
             {
                 var accessiblePositionsNum = that.NumberOfAccessiblePositions(room, source.pos);

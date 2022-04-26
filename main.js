@@ -5,8 +5,8 @@ var RoomManager = require('manager.room');
 
 module.exports.loop = function () 
 {
-    RoomManager.Process();
-    SpawnerManager.Process();
+    var rooms = RoomManager.Process();//check whether it works to just pass down RoomManager.owned_rooms
+    SpawnerManager.Process(rooms);
     WorkerManager.Process(); 
     SoldierManager.Process();
 }
