@@ -99,7 +99,7 @@ var RoomManager =
             }
             
             console.log("CONTROLLER");
-            console.log(owned_rooms[i].room_controller.pos.x + "," + owned_rooms[i].room_controller.pos.y)
+            console.log("   " + owned_rooms[i].room_controller.pos.x + "," + owned_rooms[i].room_controller.pos.y)
             
             console.log();
         }
