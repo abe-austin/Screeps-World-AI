@@ -5,13 +5,11 @@ var room_spawns = [];
 var SpawnerManager = 
 {
     Process: function() 
-    {
-        RoomManager.PrintRooms(RoomManager.owned_rooms);
-        
+    {        
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
         {
-            if(!room_spawns.find(roomSpawn => roomSpawn.room ==rooms[i].name))
+            if(!room_spawns.find(roomSpawn => roomSpawn.room == rooms[i].name))
             {
                 this.ParseRoomSpawns(rooms[i]);
             }
@@ -21,8 +19,6 @@ var SpawnerManager =
         this.ExecuteSpawnPool();
         //Get all of your spawners by room. Load from manager.room your resources
             //I assume I can programmatically create a new spawner? Or am I limited to just one? 
-        //Update job pool
-        //Execute next item on pool
     },
     
     ParseRoomSpawns: function(roomData)
@@ -42,7 +38,7 @@ var SpawnerManager =
     UpdateSpawnPool: function()
     {
         //for each room...
-        //re-evaluate desired state (updates over time)
+        //re-evaluate worker and soldier quoras (taken from worker and soldier managers, updates over time)
         //if it has changed, compare to current state
         //add items to spawn pool to make up the difference
     },
@@ -51,6 +47,7 @@ var SpawnerManager =
     {
         //for each room...
         //next thing in the pool, check if any of the spawns can perform it. if so do it
+        //the spawned item gets handed over to the worker or soldier director for orders
     }
 };
 

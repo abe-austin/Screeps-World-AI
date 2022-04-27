@@ -1,7 +1,35 @@
+var RoomManager = require('manager.room');
+
+var room_workers = [];
+
 var WorkerManager = 
-{
+{ 
     Process: function() 
+    {       
+        var rooms = RoomManager.GetRooms();
+        for(var i = 0; i < rooms.length; i++)
+        {
+            if(!room_workers.find(worker => worker.room == rooms[i].name))
+            {
+                this.ParseRoomWorkers(rooms[i]);
+            }
+        }
+        
+        this.UpdateWorkerQuotas();
+    },
+
+    ParseRoomWorkers: function()
     {
+        //look at the room's elements comparative to level of development
+            //for level 0, only checking for sources, spawners, and controllers
+        //choose a number of workers to manage each element, add them to the quota
+        //also track the current state of workers (initially none), and update it whenever the spawner hands someone over
+        //turn that new worker over to the worker director for orders
+    },
+
+    UpdateWorkerQuotas()
+    {
+
     }
 };
 
