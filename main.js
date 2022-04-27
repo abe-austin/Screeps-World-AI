@@ -7,10 +7,11 @@ var RoomManager = require('manager.room');
 module.exports.loop = function () 
 {
     RoomManager.Process();
-
-    RoomManager.PrintRooms(RoomManager.owned_rooms);
+    RoomManager.PrintRooms();
 
     WorkerManager.Process(); 
+    WorkerManager.PrintWorkerPool();
+    
     SpawnerManager.Process();
     WorkerDirector.Process();
     SoldierManager.Process();
