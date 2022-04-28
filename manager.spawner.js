@@ -2,6 +2,7 @@ var RoomManager = require('manager.room');
 var WorkerManager = require('manager.worker');
 
 var room_spawns = [];
+var workerCounter = 0;
 
 var SpawnerManager = 
 {
@@ -64,18 +65,28 @@ var SpawnerManager =
         //for each room...
         //next thing in the pool, check if any of the spawns can perform it. if so do it
         //the spawned item gets handed over to the worker or soldier director for orders
+        console.log(";;;;;;;;;;;;;;;;;;;;;;;;;;;;");
         for(var i = 0; i < room_spawns.length; i++)
         {
+            console.log("spawn queue length " + room_spawns[i].spawn_queue.length);
             if(room_spawns[i].spawn_queue.length > 0)
-            {
+            {                
+                console.log("spawns length " + room_spawns[i].spawns.length);
                 for(var j = 0; j < room_spawns[i].spawns.length; j++)
                 {
                     var spawner = room_spawns[i].spawns[j];
                     var nextSpawnItem = room_spawns[i].spawn_queue[0];
                     var spawnCost = this.CalculateCost(nextSpawnItem.configuration);
+
+                    console.log("spawn cost " + spawnCost);
+                    console.log("stored energy " + spawner.store.getUsedCapacity(RESOURCE_ENERGY));
+                    console.log("energy " + spawner.energy);
+
                     if(spawner.store.getUsedCapacity(RESOURCE_ENERGY) >= spawnCost)
                     {
-                        spawner.spawnCreep(nextSpawnItem.configuration, 'Harvester', { memory: {assigned: false, retrieveFrom: null, depositTo: null} });//make name
+                        console.log("spawning");
+                        spawner.spawnCreep(nextSpawnItem.configuration, "Harvester" + workerCounter, { memory: {role: "harvester", assigned: false, retrieveFrom: null, depositTo: null} });
+                        workerCounter++;
                         room_spawns[i].spawn_queue.shift();
                     }
                 }

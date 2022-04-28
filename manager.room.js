@@ -42,12 +42,13 @@ var RoomManager =
         var that = this;
         var resourceList = [];
         room.find(elementType)
-            .forEach(function(source)
+            .forEach(function(element)
             {
-                var accessiblePositionsNum = that.NumberOfAccessiblePositions(room, source.pos);
+                var accessiblePositionsNum = that.NumberOfAccessiblePositions(room, element.pos);
                 resourceList.push({
-                    "x": source.pos.x, 
-                    "y": source.pos.y, 
+                    "element": element,
+                    "x": element.pos.x, 
+                    "y": element.pos.y, 
                     "accessible_points": accessiblePositionsNum,
                     "dedicated_units": []
                 });
