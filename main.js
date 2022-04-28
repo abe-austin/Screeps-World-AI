@@ -10,7 +10,7 @@ module.exports.loop = function ()
     //RoomManager.PrintRooms();
 
     WorkerManager.Process(); 
-    WorkerManager.PrintWorkerPool();
+    //WorkerManager.PrintWorkerPool();
     
     SpawnerManager.Process();
     WorkerDirector.Process();

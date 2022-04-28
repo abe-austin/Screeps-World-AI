@@ -18,7 +18,6 @@ var worker_levels =
 {
     "0" : 
     {
-        "testVal": "hi",
         "harvester_configuration": [WORK, MOVE, CARRY]
     },
     "1" : 
@@ -84,7 +83,7 @@ var WorkerManager =
     {
         for(var i = 0; i < worker_quota.length; i++)
         {
-            console.log(worker_quota[0].room);
+            console.log(worker_quota[i].room);
             console.log("HARVESTER REQUIREMENT");
             console.log("   Count- " +  worker_quota[i].harvester_requirement.count);
             console.log("   Quota- " +  worker_quota[i].harvester_requirement.quota);

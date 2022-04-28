@@ -79,7 +79,7 @@ var RoomManager =
     {
         for(var i = 0; i < owned_rooms.length; i++)
         {
-            console.log(owned_rooms[0].name);
+            console.log(owned_rooms[i].name);
             console.log("RESOURCES");
             for(var j = 0; j < owned_rooms[i].resources.length; j++)
             {
