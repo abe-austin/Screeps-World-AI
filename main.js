@@ -16,3 +16,5 @@ module.exports.loop = function ()
     WorkerDirector.Process();
     SoldierManager.Process();
 }
+
+//TO RESET SERVER, RUN THIS IN CLI: system.resetAllData()

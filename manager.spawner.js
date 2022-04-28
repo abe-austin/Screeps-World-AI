@@ -7,7 +7,7 @@ var workerCounter = 0;
 var SpawnerManager = 
 {
     Process: function() 
-    {        
+    {
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
         {
@@ -78,13 +78,12 @@ var SpawnerManager =
 
                     if(spawner.store.getUsedCapacity(RESOURCE_ENERGY) >= spawnCost)
                     {
-                        console.log("spawning");
-                        console.log("worker name counter " + workerCounter);
                         var response = spawner.spawnCreep(nextSpawnItem.configuration, "Harvester" + workerCounter, { memory: {role: "harvester", assigned: false, retrieveFrom: null, depositTo: null} });
-                        console.log("response " + response);
                         workerCounter++;
-                        room_spawns[i].spawn_queue.shift();
-                        console.log("new spawn queue length " + room_spawns[i].spawn_queue.length);
+                        if(response == OK)
+                        {
+                            room_spawns[i].spawn_queue.shift();
+                        }
                     }
                 }
             }

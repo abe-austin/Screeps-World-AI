@@ -67,6 +67,9 @@ var WorkerDirector =
         //spawn2
         //spawn1
         //spawn2
+        
+        //ALL THE BELOW IS MESSY AND YOU CAN GET RID OF WHATEVER YOU NEED. JUST GET IT TO DO THE PATTERN SHOWN ABOVE. ALTERNATE BETWEEN ALL THE SPAWNERS, BUT INTERRUPT AFTER THE FIRST SPAWNER TO DO THE CONTROLLER
+        //THOUGH HONESTLY...NOT THAT IMPORTANT. THE SPAWNER WILL REGENERATE ENERGY FASTER THAN THESE INITIAL WORKERS WILL MAKE A DIFFERENCE PROBABLY. COULD JUST DO THE CONTROLLER FIRST THEN ALTERNATE THE RESET BETWEEN THE SPAWNS
 
         //So rather than creating a new job, we want to look at the currently existing jobs that are harvesting from energy and don't yet have a depositTo. Fill out those jobs as now pointing to these items
         var targets = [];
