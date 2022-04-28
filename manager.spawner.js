@@ -1,4 +1,5 @@
 var RoomManager = require('manager.room');
+var WorkerManager = require('manager.worker');
 
 var room_spawns = [];
 
@@ -13,10 +14,11 @@ var SpawnerManager =
             {
                 this.ParseRoomSpawns(rooms[i]);
             }
+            
+            this.UpdateSpawnPool();
+            this.ExecuteSpawnPool();
         }
         
-        this.UpdateSpawnPool();
-        this.ExecuteSpawnPool();
         //Get all of your spawners by room. Load from manager.room your resources
             //I assume I can programmatically create a new spawner? Or am I limited to just one? 
     },
@@ -24,23 +26,23 @@ var SpawnerManager =
     ParseRoomSpawns: function(roomData)
     {
         var room = Game.rooms[roomData.name];
-        var roomSpawnsStructure = { "room": room.name, "spawns": [] };
+        var roomSpawnGroup = { "room": room.name, "spawns": [], "spawn_queue": [] };
         var spawns = room.find(FIND_MY_SPAWNS);
         
         for(var i = 0; i < spawns.length; i++)
         {
-            roomSpawnsStructure.spawns.push(spawns[i]);
+            roomSpawnGroup.spawns.push(spawns[i]);
         }
         
-        room_spawns.push(roomSpawnsStructure);
+        var roomQuota = WorkerManager.GetQuotas().filter(function(x) { return x.room == roomData.name; })[0];
+        roomSpawnGroup.spawn_queue = roomQuota.harvester_requirement;
+        
+        room_spawns.push(roomSpawnGroup);
+        
     },
     
     UpdateSpawnPool: function()
     {
-        //for each room...
-        //re-evaluate worker and soldier quoras (taken from worker and soldier managers, updates over time)
-        //if it has changed, compare to current state
-        //add items to spawn pool to make up the difference
     },
     
     ExecuteSpawnPool: function()

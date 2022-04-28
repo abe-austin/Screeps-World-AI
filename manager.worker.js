@@ -1,6 +1,6 @@
 var RoomManager = require('manager.room');
 
-var worker_pool = 
+var worker_quota = 
 [
     //The spawner is pulling from this pool AND the soldier one. It is having to determine the correct priority of each, and update that priorityQueue as the situation changes
     //And I don't really want to be deciding right here where each worker goes. It is implied, but all I really want is to create a number of workers needed, and what type
@@ -19,11 +19,11 @@ var worker_levels =
     "0" : 
     {
         "testVal": "hi",
-        "harvester_configuration": {"move": 1, "work": 1, "carry": 1}
+        "harvester_configuration": [WORK, MOVE, CARRY]
     },
     "1" : 
     { 
-        "harvester_configuration": {"move": 1, "work": 1, "carry": 1}
+        "harvester_configuration":  [WORK, MOVE, CARRY]
     },
 };
 
@@ -31,18 +31,23 @@ var current_worker_level = "0";
 
 var WorkerManager = 
 { 
+    GetQuotas: function()
+    {
+        return worker_quota;
+    },
+    
     Process: function() 
     {       
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
         {
-            if(!worker_pool.find(pool => pool.room == rooms[i].name))
+            if(!worker_quota.find(pool => pool.room == rooms[i].name))
             {
                 this.ParseRoomWorkers(rooms[i]);
             }
         }
         
-        this.UpdateWorkerQuotas();
+        //Update existing quotas;
     },
 
     ParseRoomWorkers: function(room)
@@ -56,14 +61,17 @@ var WorkerManager =
         {
             harvesterQuota += room.minerals[i].accessible_points;
         }
-        worker_pool.push({
+        
+        worker_quota.push({
                             "room": room.name, 
                             "harvester_requirement": 
                             { 
-                                "count": harvesterQuota,
-                                "configuration": worker_levels[current_worker_level].harvester_configuration
+                                "count": 0,
+                                "quota": harvesterQuota,
+                                "configuration": worker_levels[current_worker_level].harvester_configuration,
+                                "priority": 5//Some logic to actually evaluate what this should be
                             }
-        });
+                        });
         
         //look at the room's elements comparative to level of development
             //for level 0, only checking for sources, spawners, and controllers
@@ -71,21 +79,17 @@ var WorkerManager =
         //also track the current state of workers (initially none), and update it whenever the spawner hands someone over
         //turn that new worker over to the worker director for orders
     },
-
-    UpdateWorkerQuotas(sources)
-    {
-
-    },
     
     PrintWorkerPool: function()
     {
-        console.log("??????????????????" + worker_levels["0"].testVal);
-        for(var i = 0; i < worker_pool.length; i++)
+        for(var i = 0; i < worker_quota.length; i++)
         {
-            console.log(worker_pool[0].room);
+            console.log(worker_quota[0].room);
             console.log("HARVESTER REQUIREMENT");
-            console.log("   Count- " +  worker_pool[i].harvester_requirement.count);
-            console.log("   Configuration- " +  worker_levels[current_worker_level].configuration);
+            console.log("   Count- " +  worker_quota[i].harvester_requirement.count);
+            console.log("   Quota- " +  worker_quota[i].harvester_requirement.quota);
+            console.log("   Configuration- " +  worker_quota[i].harvester_requirement.configuration);
+            console.log("   Priority- " +  worker_quota[i].harvester_requirement.priority);
             console.log();
         }
         console.log(":::::::::::::::::::::::::::::::::::::::::");
@@ -93,34 +97,3 @@ var WorkerManager =
 };
 
 module.exports = WorkerManager;
-
-/*
-
-	    if(creep.store.getFreeCapacity() > 0) 
-	    {
-            var sources = creep.room.find(FIND_SOURCES);
-            if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) 
-            {
-                creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
-            }
-        }
-        else 
-        {
-            var targets = creep.room.find(FIND_STRUCTURES, 
-            {
-                    filter: (structure) => 
-                    {
-                        return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
-                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                    }
-            });
-            if(targets.length > 0) 
-            {
-                if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) 
-                {
-                    creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
-                }
-            }
-        }
-	}
-*/

@@ -7,7 +7,7 @@ var RoomManager = require('manager.room');
 module.exports.loop = function () 
 {
     RoomManager.Process();
-    RoomManager.PrintRooms();
+    //RoomManager.PrintRooms();
 
     WorkerManager.Process(); 
     WorkerManager.PrintWorkerPool();
