@@ -33,7 +33,7 @@ var SpawnerManager =
         
         for(var i = 0; i < spawns.length; i++)
         {
-            roomSpawnGroup.spawns.push(spawns[i]);
+            roomSpawnGroup.spawns.push(spawns[i].name);
         }
         
         var roomQuota = WorkerManager.GetQuotas().filter(function(x) { return x.room == roomData.name; })[0];
@@ -65,29 +65,26 @@ var SpawnerManager =
         //for each room...
         //next thing in the pool, check if any of the spawns can perform it. if so do it
         //the spawned item gets handed over to the worker or soldier director for orders
-        console.log(";;;;;;;;;;;;;;;;;;;;;;;;;;;;");
         for(var i = 0; i < room_spawns.length; i++)
         {
-            console.log("spawn queue length " + room_spawns[i].spawn_queue.length);
             if(room_spawns[i].spawn_queue.length > 0)
             {                
-                console.log("spawns length " + room_spawns[i].spawns.length);
                 for(var j = 0; j < room_spawns[i].spawns.length; j++)
                 {
                     var spawner = room_spawns[i].spawns[j];
+                    var spawner = Game.spawns[room_spawns[i].spawns[j]];
                     var nextSpawnItem = room_spawns[i].spawn_queue[0];
                     var spawnCost = this.CalculateCost(nextSpawnItem.configuration);
-
-                    console.log("spawn cost " + spawnCost);
-                    console.log("stored energy " + spawner.store.getUsedCapacity(RESOURCE_ENERGY));
-                    console.log("energy " + spawner.energy);
 
                     if(spawner.store.getUsedCapacity(RESOURCE_ENERGY) >= spawnCost)
                     {
                         console.log("spawning");
-                        spawner.spawnCreep(nextSpawnItem.configuration, "Harvester" + workerCounter, { memory: {role: "harvester", assigned: false, retrieveFrom: null, depositTo: null} });
+                        console.log("worker name counter " + workerCounter);
+                        var response = spawner.spawnCreep(nextSpawnItem.configuration, "Harvester" + workerCounter, { memory: {role: "harvester", assigned: false, retrieveFrom: null, depositTo: null} });
+                        console.log("response " + response);
                         workerCounter++;
                         room_spawns[i].spawn_queue.shift();
+                        console.log("new spawn queue length " + room_spawns[i].spawn_queue.length);
                     }
                 }
             }
