@@ -36,16 +36,8 @@ var SpawnerManager =
             roomSpawnGroup.spawns.push(spawns[i].name);
         }
         
-        var roomQuota = WorkerManager.GetQuotas().filter(function(x) { return x.room == roomData.name; })[0];
-        for(var i = 0; i < roomQuota.harvester_requirement.quota - roomQuota.harvester_requirement.count; i++)
-        {
-            roomSpawnGroup.spawn_queue.push({
-                                                "type": "harvester", 
-                                                "configuration": roomQuota.harvester_requirement.configuration, 
-                                                "priority": roomQuota.harvester_requirement.priority
-                                            });
-        }
-        
+        roomSpawnGroup.spawn_queue = RetrieveSpawnQuota(roomData.name);
+            
         room_spawns.push(roomSpawnGroup);
     },
     
@@ -53,11 +45,17 @@ var SpawnerManager =
     {
         for(var i = 0; i < room_spawns.length; i++)
         {
-            //Detect changes
-            
+            room_spawns[i].spawn_queue = RetrieveSpawnQuota(room_spawns[i].room);
+
             //Sort
             room_spawns[i].spawn_queue.sort((a, b) => { return b.priority - a.priority; });;
         }
+    },
+
+    RetrieveSpawnQuota: function(roomName)
+    {
+        var roomWorkerArea = WorkerManager.GetRoomWorkerAreas().find(x => x.room == roomName);
+        return roomWorkerArea.spawn_quotas;    
     },
     
     ExecuteSpawnPool: function()
@@ -78,11 +76,11 @@ var SpawnerManager =
 
                     if(spawner.store.getUsedCapacity(RESOURCE_ENERGY) >= spawnCost)
                     {
-                        var response = spawner.spawnCreep(nextSpawnItem.configuration, "Harvester" + workerCounter, { memory: {role: "harvester", assigned: false, retrieveFrom: null, depositTo: null} });
+                        var response = spawner.spawnCreep(nextSpawnItem.configuration, "Worker" + workerCounter, { memory: {"area": nextSpawnItem.area, assigned: false} });
                         workerCounter++;
                         if(response == OK)
                         {
-                            room_spawns[i].spawn_queue.shift();
+                            room_spawns[i].spawn_queue.shift();//Will this also remove it from the workermanager's list? Test
                         }
                     }
                 }
@@ -115,21 +113,6 @@ var SpawnerManager =
     
     PrintRoomSpawns: function()
     {
-        for(var i = 0; i < room_spawns.length; i++)
-        {
-            console.log(room_spawns[i].room);
-            console.log("   Spawns- " +  room_spawns[i].spawns.length);
-            console.log("   Queue- ");
-            for(var j = 0; j < room_spawns[i].spawn_queue.length; j++)
-            {
-                var spawn_queue_entry = room_spawns[i].spawn_queue[j];
-                console.log("      Type- " + spawn_queue_entry.type);
-                console.log("      Configuration- " + spawn_queue_entry.configuration);
-                console.log("      Priority- " + spawn_queue_entry.priority);
-            }
-            console.log();
-        }
-        console.log(":::::::::::::::::::::::::::::::::::::::::");
     }
 };
 

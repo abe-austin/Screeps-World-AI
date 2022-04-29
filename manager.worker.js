@@ -1,24 +1,19 @@
 var RoomManager = require('manager.room');
 
-var worker_quota = 
+var room_worker_areas = 
 [
-    //The spawner is pulling from this pool AND the soldier one. It is having to determine the correct priority of each, and update that priorityQueue as the situation changes
-    //And I don't really want to be deciding right here where each worker goes. It is implied, but all I really want is to create a number of workers needed, and what type
-    //Then it is up to director.worker to actually tell them where they are going.
-    //So I don't want structure here to divide the pool across different sources
-    //I just want...I need five miners and three builders of the following configurations
-    
-    //For every source and mineral I want X+1 miners, where X is the number of accessible points
-    //Later on I'll want builders as well, who are not tied to a set number of structures, but who we gradually want more and more of to handle just whatever new jobs come up. But I'll worry about that when I get to it
-    
-    //As for the destination of each miner (spawner or controller) I don't need to worry about that here. That's the director's job
+    //Later on I'll want builders as well, who are not tied to a set number of structures, 
+    //but who we gradually want more and more of to handle just whatever new jobs come up.
+    //But I'll worry about that when I get to it
 ];
+
+var area_id = 0;
 
 var worker_levels = 
 {
     "0" : 
     {
-        "harvester_configuration": [WORK, MOVE, CARRY]
+        "harvester_configuration": [WORK, MOVE, CARRY]//Eventually want these to be configured by spawner budget, and programmatically building the best unit affordable
     },
     "1" : 
     { 
@@ -30,9 +25,9 @@ var current_worker_level = "0";
 
 var WorkerManager = 
 { 
-    GetQuotas: function()
+    GetRoomWorkerAreas: function()
     {
-        return worker_quota;
+        return room_worker_areas;
     },
     
     Process: function() 
@@ -40,58 +35,176 @@ var WorkerManager =
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
         {
-            if(!worker_quota.find(pool => pool.room == rooms[i].name))
+            var room_worker_area = room_worker_areas.find(workerArea => workerArea.room == rooms[i].name); 
+            if(!room_worker_area)
             {
-                this.ParseRoomWorkers(rooms[i]);
+                room_worker_area = this.ParseRoomWorkAreas(rooms[i]);
             }
+            this.UpdateSpawnQuotas(room_worker_area);
+            this.DetectNewWorkers(rooms[i]);
+            this.ExecuteWorkerActions(rooms[i]);
         }
-        
-        //Update existing quotas;
     },
 
-    ParseRoomWorkers: function(room)
+    ParseRoomWorkAreas: function(room)
     {
-        var harvesterQuota = 0;
+        var roomWorkerAreaCollection = { "room": room.name, "areas": [], "spawn_quotas": [], "harvesters": [] };
+        var harvestingArea = this.ParseHarvestingQuota(room);
+        roomWorkerAreaCollection.areas.push(harvestingArea);
+        room_worker_areas.push(roomWorkerAreaCollection);
+        return roomWorkerAreaCollection;
+        //Build out other areas
+    },
+
+    ParseHarvestingQuota: function(room)
+    {
+        var area = {"id": area_id};
+        area.sources = this.ParseHarvestSources(room);
+        area.targets = this.ParseHarvestTargets(room);
+        area.next_target = 0;
+
+        area_id++;
+        var quota = 0;
         for(var i = 0; i < room.resources.length; i++)
         {
-            harvesterQuota += room.resources[i].accessible_points;
+            quota += room.resources[i].accessible_points;
         }
-        for(var i = 0; i < room.minerals.length; i++)
+        //Add minerals later
+
+        area.role = "harvesting";
+        area.quota = quota;
+        area.priority = 5;//Set this in a clever way later
+        area.current_workers = 0;
+        area.configuration = worker_levels[current_worker_level].harvester_configuration;
+        return area;
+    },
+
+    ParseHarvestSources: function(room)
+    {
+        var sources = [];
+        for(var i = 0; i < room.resources.length; i++)
         {
-            harvesterQuota += room.minerals[i].accessible_points;
+            var resource = room.resources[i];
+            var source = {
+                            "type": "energy", 
+                            "element": resource.element, 
+                            "limit": resource.accessible_points,
+                            "active": 0
+                        };
+            sources.push(source);
         }
+        //do the same for minerals later
+        return sources;
+    },
+
+    ParseHarvestTargets: function(room)
+    {
+        var targets = [];
+        for(var i = 0; i < room.spawns.length; i++)
+        {
+            var target = {
+                            "type": "spawner", 
+                            "element": room.spawns[i].element, 
+                            "limit": -1,
+                            "active": 0
+                        };
+            targets.push(target);
+        }
+        targets.push({
+                        "type": "controller", 
+                        "element": room.controller, 
+                        "limit": 1,
+                        "active": 0
+                    });
+        return targets;
+    },
+
+    UpdateSpawnQuotas: function(roomWorkerArea)
+    {       
+        for(var i = 0; i < roomWorkerArea.areas.length; i++)
+        {
+            var area = roomWorkerArea.areas[i];
+            var existingAreaQuota = roomWorkerArea.spawn_quotas.filter(x => x.area = area.id);
+            for(var j = 0; j < area.quota - existingAreaQuota.length; j++)
+            {
+                roomWorkerArea.spawn_quotas.push({
+                                                    "area": area.id, 
+                                                    "configuration": area.configuration, 
+                                                    "priorty": area.priority
+                                                });
+            }
+        }
+    },
+
+    DetectNewWorkers: function(room)
+    {
+        var roomWorkerAreas = room_worker_areas.find(workerArea => workerArea.room == room.name);
+        var areaIds = roomWorkerAreas.areas.map(x => x.id);
+        var room = Game.rooms[room.name];
+        var newWorkers = room.find(FIND_MY_SPAWNS).filter(x => areaIds.includes(x.memory.area) && !x.memory.assigned);
+        if(newWorkers && newWorkers.length > 0)
+        {
+            this.AssignWorkers(newWorkers, roomWorkerAreas);
+        }
+    },
+
+    AssignWorkers: function(workers, areas)
+    {
+        for(var i = 0; i < workers.length; i++)
+        {
+            var worker = workers[i];
+            var area = areas.find(x => x.id == worker.memory.area);
+            if(area.role == "harvesting")
+            {         
+                var source = area.sources.find(x => x.active < x.limit);
+                var target = area.targets[area.next_target];
+                if(source != undefined && target != undefined)
+                {
+                    worker.memory.source = source.element;
+                    worker.memory.target = target.element;
+                    source.active++;
+                    worker.memory.assigned = true;
+                    this.SetNextAvailableTarget();
+                }
+                //else something went really wrong
+                
+                //add it to a list of active harvesters who will execute their logic each tick
+                areas.harvesters.push(worker);
+            }
+            area.current_workers++;
+        }
+    },
+
+    SetNextAvailableTarget: function(area)
+    {
+        var targetFound = false;
+        while(!targetFound)
+        {
+            area.next_target = (area.next_target + 1) % area.targets.length;
+            var target = area.targets[area.next_target];
+            if(target.active < target.limit || target.limit == -1)
+            {
+                targetFound = true;
+            }
+        }
+    },
+
+    ExecuteWorkerActions: function(room)
+    {
+        var roomWorkerAreas = roomWorkerAreas.find(workerArea => workerArea.room == room.name);
+        for(var i = 0; i < roomWorkerAreas.harvesters.length; i++)
+        {
+            this.ExecuteHarvesterAction(roomWorkerAreas.harvesters[i]);
+        }
+    },
+
+    ExecuteHarvesterAction: function(harvester)
+    {
         
-        worker_quota.push({
-                            "room": room.name, 
-                            "harvester_requirement": 
-                            { 
-                                "count": 0,
-                                "quota": harvesterQuota,
-                                "configuration": worker_levels[current_worker_level].harvester_configuration,
-                                "priority": 5//Some logic to actually evaluate what this should be
-                            }
-                        });
-        
-        //look at the room's elements comparative to level of development
-            //for level 0, only checking for sources, spawners, and controllers
-        //choose a number of workers to manage each element, add them to the quota
-        //also track the current state of workers (initially none), and update it whenever the spawner hands someone over
-        //turn that new worker over to the worker director for orders
     },
     
     PrintWorkerPool: function()
     {
-        for(var i = 0; i < worker_quota.length; i++)
-        {
-            console.log(worker_quota[i].room);
-            console.log("HARVESTER REQUIREMENT");
-            console.log("   Count- " +  worker_quota[i].harvester_requirement.count);
-            console.log("   Quota- " +  worker_quota[i].harvester_requirement.quota);
-            console.log("   Configuration- " +  worker_quota[i].harvester_requirement.configuration);
-            console.log("   Priority- " +  worker_quota[i].harvester_requirement.priority);
-            console.log();
-        }
-        console.log(":::::::::::::::::::::::::::::::::::::::::");
     }
 };
 

@@ -29,7 +29,7 @@ var RoomManager =
         var room = Game.rooms[roomName];
         var roomStructure = { "name": roomName };
         roomStructure.resources = this.ParseRoomElements(room, FIND_SOURCES);
-        roomStructure.minerals = this.ParseRoomElements(room, FIND_MINERALS);
+        //roomStructure.minerals = this.ParseRoomElements(room, FIND_MINERALS);//Worry about this later
         roomStructure.spawns = this.ParseRoomElements(room, FIND_MY_SPAWNS);
         roomStructure.room_controller = room.controller;
         //FUTURE ROOM ELEMENTS TO ADD
@@ -87,11 +87,11 @@ var RoomManager =
                 console.log("   " + owned_rooms[i].resources[j].x + "," + owned_rooms[i].resources[j].y + "    " + owned_rooms[i].resources[j].accessible_points);
             }
             
-            console.log("MINERALS");
-            for(var j = 0; j < owned_rooms[i].minerals.length; j++)
-            {
-                console.log("   " + owned_rooms[i].minerals[j].x + "," + owned_rooms[i].minerals[j].y + "    " + owned_rooms[i].minerals[j].accessible_points);
-            }
+            // console.log("MINERALS");
+            // for(var j = 0; j < owned_rooms[i].minerals.length; j++)
+            // {
+            //     console.log("   " + owned_rooms[i].minerals[j].x + "," + owned_rooms[i].minerals[j].y + "    " + owned_rooms[i].minerals[j].accessible_points);
+            // }
             
             console.log("SPAWNS");
             for(var j = 0; j < owned_rooms[i].spawns.length; j++)
