@@ -191,7 +191,7 @@ var WorkerManager =
 
     ExecuteWorkerActions: function(room)
     {
-        var roomWorkerAreas = roomWorkerAreas.find(workerArea => workerArea.room == room.name);
+        var roomWorkerAreas = room_worker_areas.find(workerArea => workerArea.room == room.name);
         for(var i = 0; i < roomWorkerAreas.harvesters.length; i++)
         {
             this.ExecuteHarvesterAction(roomWorkerAreas.harvesters[i]);

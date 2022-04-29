@@ -36,7 +36,7 @@ var SpawnerManager =
             roomSpawnGroup.spawns.push(spawns[i].name);
         }
         
-        roomSpawnGroup.spawn_queue = RetrieveSpawnQuota(roomData.name);
+        roomSpawnGroup.spawn_queue = this.RetrieveSpawnQuota(roomData.name);
             
         room_spawns.push(roomSpawnGroup);
     },
@@ -45,7 +45,7 @@ var SpawnerManager =
     {
         for(var i = 0; i < room_spawns.length; i++)
         {
-            room_spawns[i].spawn_queue = RetrieveSpawnQuota(room_spawns[i].room);
+            room_spawns[i].spawn_queue = this.RetrieveSpawnQuota(room_spawns[i].room);
 
             //Sort
             room_spawns[i].spawn_queue.sort((a, b) => { return b.priority - a.priority; });;
