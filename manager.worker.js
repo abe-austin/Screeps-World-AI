@@ -200,7 +200,20 @@ var WorkerManager =
 
     ExecuteHarvesterAction: function(harvester)
     {
-        
+        if(harvester.store.getFreeCapacity() > 0) 
+	    {
+            if(harvester.harvest(harvester.memory.source) == ERR_NOT_IN_RANGE) 
+            {
+                harvester.moveTo(harvester.memory.source, {visualizePathStyle: {stroke: '#ffaa00'}});
+            }
+        }
+        else 
+        {
+            if(harvester.transfer(harvester.memory.target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) 
+            {
+                harvester.moveTo(harvester.memory.target, {visualizePathStyle: {stroke: '#ffffff'}});
+            }
+        }
     },
     
     PrintWorkerPool: function()
