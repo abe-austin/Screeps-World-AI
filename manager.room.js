@@ -31,7 +31,7 @@ var RoomManager =
         roomStructure.resources = this.ParseRoomElements(room, FIND_SOURCES);
         //roomStructure.minerals = this.ParseRoomElements(room, FIND_MINERALS);//Worry about this later
         roomStructure.spawns = this.ParseRoomElements(room, FIND_MY_SPAWNS);
-        roomStructure.room_controller = room.controller;
+        roomStructure.controller = room.controller;
         //FUTURE ROOM ELEMENTS TO ADD
         
         owned_rooms.push(roomStructure);
