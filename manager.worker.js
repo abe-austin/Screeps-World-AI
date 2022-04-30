@@ -32,6 +32,8 @@ var WorkerManager =
     
     Process: function() 
     {       
+        Memory.room_worker_areas = room_worker_areas;
+        
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
         {
@@ -48,7 +50,7 @@ var WorkerManager =
 
     ParseRoomWorkAreas: function(room)
     {
-        var roomWorkerAreaCollection = { "room": room.name, "areas": [], "spawn_quotas": [], "harvesters": [] };
+        var roomWorkerAreaCollection = { "room": room.name, "areas": [], "spawn_quota": [], "harvesters": [] };
         var harvestingArea = this.ParseHarvestingQuota(room);
         roomWorkerAreaCollection.areas.push(harvestingArea);
         room_worker_areas.push(roomWorkerAreaCollection);
@@ -124,10 +126,10 @@ var WorkerManager =
         for(var i = 0; i < roomWorkerArea.areas.length; i++)
         {
             var area = roomWorkerArea.areas[i];
-            var existingAreaQuota = roomWorkerArea.spawn_quotas.filter(x => x.area = area.id);
+            var existingAreaQuota = roomWorkerArea.spawn_quota.filter(x => x.area == area.id);
             for(var j = 0; j < area.quota - existingAreaQuota.length; j++)
             {
-                roomWorkerArea.spawn_quotas.push({
+                roomWorkerArea.spawn_quota.push({
                                                     "area": area.id, 
                                                     "configuration": area.configuration, 
                                                     "priorty": area.priority
@@ -141,19 +143,19 @@ var WorkerManager =
         var roomWorkerAreas = room_worker_areas.find(workerArea => workerArea.room == room.name);
         var areaIds = roomWorkerAreas.areas.map(x => x.id);
         var room = Game.rooms[room.name];
-        var newWorkers = room.find(FIND_MY_SPAWNS).filter(x => areaIds.includes(x.memory.area) && !x.memory.assigned);
+        var newWorkers = room.find(FIND_MY_CREEPS).filter(x => areaIds.includes(x.memory.area) && !x.memory.assigned);;
         if(newWorkers && newWorkers.length > 0)
         {
             this.AssignWorkers(newWorkers, roomWorkerAreas);
         }
     },
 
-    AssignWorkers: function(workers, areas)
+    AssignWorkers: function(workers, roomWorkerAreas)
     {
         for(var i = 0; i < workers.length; i++)
         {
             var worker = workers[i];
-            var area = areas.find(x => x.id == worker.memory.area);
+            var area = roomWorkerAreas.areas.find(x => x.id == worker.memory.area);
             if(area.role == "harvesting")
             {         
                 var source = area.sources.find(x => x.active < x.limit);
@@ -164,12 +166,12 @@ var WorkerManager =
                     worker.memory.target = target.element;
                     source.active++;
                     worker.memory.assigned = true;
-                    this.SetNextAvailableTarget();
+                    this.SetNextAvailableTarget(area);
                 }
                 //else something went really wrong
                 
                 //add it to a list of active harvesters who will execute their logic each tick
-                areas.harvesters.push(worker);
+                roomWorkerAreas.harvesters.push(worker);
             }
             area.current_workers++;
         }
@@ -192,6 +194,7 @@ var WorkerManager =
     ExecuteWorkerActions: function(room)
     {
         var roomWorkerAreas = room_worker_areas.find(workerArea => workerArea.room == room.name);
+        console.log("@" + roomWorkerAreas.harvesters.length);
         for(var i = 0; i < roomWorkerAreas.harvesters.length; i++)
         {
             this.ExecuteHarvesterAction(roomWorkerAreas.harvesters[i]);
@@ -200,24 +203,26 @@ var WorkerManager =
 
     ExecuteHarvesterAction: function(harvester)
     {
+        console.log("Executing harvester action");
         if(harvester.store.getFreeCapacity() > 0) 
 	    {
+            var result = harvester.harvest(harvester.memory.source);
+            console.log("harvesting " + result);
             if(harvester.harvest(harvester.memory.source) == ERR_NOT_IN_RANGE) 
             {
+                console.log("moving to source");
                 harvester.moveTo(harvester.memory.source, {visualizePathStyle: {stroke: '#ffaa00'}});
             }
         }
         else 
         {
+            console.log("depositing");
             if(harvester.transfer(harvester.memory.target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) 
             {
+                console.log("moving to target");
                 harvester.moveTo(harvester.memory.target, {visualizePathStyle: {stroke: '#ffffff'}});
             }
         }
-    },
-    
-    PrintWorkerPool: function()
-    {
     }
 };
 

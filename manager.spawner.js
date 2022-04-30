@@ -55,7 +55,7 @@ var SpawnerManager =
     RetrieveSpawnQuota: function(roomName)
     {
         var roomWorkerArea = WorkerManager.GetRoomWorkerAreas().find(x => x.room == roomName);
-        return roomWorkerArea.spawn_quotas;    
+        return roomWorkerArea.spawn_quota;    
     },
     
     ExecuteSpawnPool: function()
@@ -109,10 +109,6 @@ var SpawnerManager =
             //and all the others...
         }
         return cost;
-    },
-    
-    PrintRoomSpawns: function()
-    {
     }
 };
 

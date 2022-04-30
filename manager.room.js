@@ -74,37 +74,6 @@ var RoomManager =
             }
         }
         return count;
-    },
-    
-    PrintRooms: function()
-    {
-        for(var i = 0; i < owned_rooms.length; i++)
-        {
-            console.log(owned_rooms[i].name);
-            console.log("RESOURCES");
-            for(var j = 0; j < owned_rooms[i].resources.length; j++)
-            {
-                console.log("   " + owned_rooms[i].resources[j].x + "," + owned_rooms[i].resources[j].y + "    " + owned_rooms[i].resources[j].accessible_points);
-            }
-            
-            // console.log("MINERALS");
-            // for(var j = 0; j < owned_rooms[i].minerals.length; j++)
-            // {
-            //     console.log("   " + owned_rooms[i].minerals[j].x + "," + owned_rooms[i].minerals[j].y + "    " + owned_rooms[i].minerals[j].accessible_points);
-            // }
-            
-            console.log("SPAWNS");
-            for(var j = 0; j < owned_rooms[i].spawns.length; j++)
-            {
-                console.log("   " + owned_rooms[i].spawns[j].x + "," + owned_rooms[i].spawns[j].y + "    " + owned_rooms[i].spawns[j].accessible_points);
-            }
-            
-            console.log("CONTROLLER");
-            console.log("   " + owned_rooms[i].room_controller.pos.x + "," + owned_rooms[i].room_controller.pos.y)
-            
-            console.log();
-        }
-        console.log(":::::::::::::::::::::::::::::::::::::::::");
     }
     
 };
