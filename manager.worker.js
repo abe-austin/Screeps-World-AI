@@ -13,7 +13,7 @@ var worker_levels =
 {
     "0" : 
     {
-        "harvester_configuration": [WORK, MOVE, CARRY]//Eventually want these to be configured by spawner budget, and programmatically building the best unit affordable
+        "harvester_configuration": [WORK, MOVE, MOVE, CARRY, CARRY]//Eventually want these to be configured by spawner budget, and programmatically building the best unit affordable
     },
     "1" : 
     { 
@@ -166,6 +166,7 @@ var WorkerManager =
                     worker.memory.target = target.element.id;
                     worker.memory.harvesting = true;
                     source.active++;
+                    target.active++;
                     worker.memory.assigned = true;
                     this.SetNextAvailableTarget(area);
                 }
