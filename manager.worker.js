@@ -32,7 +32,7 @@ var WorkerManager =
     
     Process: function() 
     {       
-        Memory.room_worker_areas = room_worker_areas;
+        //Memory.room_worker_areas = room_worker_areas;
         
         var rooms = RoomManager.GetRooms();
         for(var i = 0; i < rooms.length; i++)
@@ -162,8 +162,8 @@ var WorkerManager =
                 var target = area.targets[area.next_target];
                 if(source != undefined && target != undefined)
                 {
-                    worker.memory.source = source.element;
-                    worker.memory.target = target.element;
+                    worker.memory.source = source.element.id;
+                    worker.memory.target = target.element ? target.element.id : target.element;//doesn't work for controller. controller doesn't have a .element attribute
                     source.active++;
                     worker.memory.assigned = true;
                     this.SetNextAvailableTarget(area);
@@ -194,7 +194,6 @@ var WorkerManager =
     ExecuteWorkerActions: function(room)
     {
         var roomWorkerAreas = room_worker_areas.find(workerArea => workerArea.room == room.name);
-        console.log("@" + roomWorkerAreas.harvesters.length);
         for(var i = 0; i < roomWorkerAreas.harvesters.length; i++)
         {
             this.ExecuteHarvesterAction(roomWorkerAreas.harvesters[i]);
@@ -203,24 +202,21 @@ var WorkerManager =
 
     ExecuteHarvesterAction: function(harvester)
     {
-        console.log("Executing harvester action");
         if(harvester.store.getFreeCapacity() > 0) 
 	    {
-            var result = harvester.harvest(harvester.memory.source);
-            console.log("harvesting " + result);
-            if(harvester.harvest(harvester.memory.source) == ERR_NOT_IN_RANGE) 
+	        var source = Game.getObjectById(harvester.memory.source);
+	        harvester.moveTo(source);
+            /*if(harvester.harvest(source) == ERR_NOT_IN_RANGE) 
             {
-                console.log("moving to source");
-                harvester.moveTo(harvester.memory.source, {visualizePathStyle: {stroke: '#ffaa00'}});
-            }
+                harvester.moveTo(source);//, {visualizePathStyle: {stroke: '#ffaa00'}});
+            }*/
         }
         else 
         {
-            console.log("depositing");
-            if(harvester.transfer(harvester.memory.target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) 
+	        var target = Game.getObjectById(harvester.memory.target);
+            if(harvester.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) 
             {
-                console.log("moving to target");
-                harvester.moveTo(harvester.memory.target, {visualizePathStyle: {stroke: '#ffffff'}});
+                harvester.moveTo(target);//, {visualizePathStyle: {stroke: '#ffffff'}});
             }
         }
     }
